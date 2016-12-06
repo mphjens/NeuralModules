@@ -1,0 +1,8 @@
+{
+  "module": {
+    "modulename": "legopredictor",
+    "description": "Predict the angle of a lego brick using a 240,240 picture where the brick is centered. Takes an array of",
+    "input_type": "string",
+    "output_type": "float"
+  }
+}

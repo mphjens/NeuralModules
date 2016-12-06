@@ -1,0 +1,77 @@
+from NeuralModule import NeuralModule
+from keras import optimizers
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from PIL import Image
+import numpy as np
+
+class module(NeuralModule):
+    def __init__(self):
+        self.inputShape = (3,240,240)
+
+    def createModel(self):
+        print ("Generating model")
+        model = Sequential()
+        print(self.inputShape)
+        model.add(Convolution2D(16, 24, 24, border_mode='same',
+                                input_shape=self.inputShape, dim_ordering='th', bias=True))
+        model.add(Activation('relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.25))
+
+        model.add(Convolution2D(16, 6, 6, border_mode='same', bias=True))
+        model.add(Activation('relu'))
+
+        model.add(Flatten())
+        model.add(Dense(10, init='uniform', bias=True))
+        model.add(Activation('relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(10, init='uniform', bias=True))
+        model.add(Activation('relu'))
+        model.add(Dropout(0.25))
+        model.add(Dense(2))
+        model.add(Activation('sigmoid'))
+
+        opt = optimizers.Adagrad(lr=0.01, epsilon=1e-08)
+        model.compile(loss='binary_crossentropy',
+                      optimizer=opt,
+                      metrics=['accuracy'])
+
+        return model
+
+    def inTransform(self, input):
+        '''Input is an array of image file paths'''
+        data = []
+        for path in input:
+            image = Image.open(path).convert('RGB')
+
+            width, height = image.size  # Get dimensions
+
+            minSize = min(width, height)
+
+            left = (width - minSize) / 2
+            top = (height - minSize) / 2
+            right = (width + minSize) / 2
+            bottom = (height + minSize) / 2
+            # centercrop to square image. Then resize it to (imgWidth, imgHeight)
+            image = image.crop((left, top, right, bottom))
+            image = image.resize((240, 240), Image.NEAREST)
+
+            # Convert to numpy array
+            imgdata = np.asarray(image, dtype="uint8")
+            print(imgdata)
+            # swap the last and color dimension, so the color dim comes first. (width, height, channel) -> (channel, width, height)
+            imgdata = np.swapaxes(imgdata, 0, 2)
+            data.append(imgdata)
+
+        data = np.array(data).astype('float32')
+        data /= 255
+
+        return data
+
+    def outTransform(self, rawOutput):
+        '''Input is an array of image file paths'''
+        rawOutput *= 180
+        return rawOutput
+
