@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import sys
-from neuralmodules import ModuleLoader, NeuralModule
+from NeuralModules import ModuleLoader, NeuralModule
 
 """Usage python useModule.py path_to_neural_module.zip"""
 if(len(sys.argv) < 2):

@@ -1,6 +1,7 @@
 class NeuralModule:
     def __init__(self):
         self.initialized = False
+        self.outputlabels = []
 
     def initializeModule(self):
         self.model = self.createModel()
@@ -19,10 +20,23 @@ class NeuralModule:
 
     def predict(self, input):
         try:
-            prediction = self.model.predict(self.inTransform(input), verbose=0)
-            return self.outTransform(prediction)
+            predictions = self.outTransform(self.model.predict(self.inTransform(input), verbose=0))
+            if(len(self.outputlabels) != len(predictions[0])):
+                print "INFO: Number of output labels does not correspond with the number of predicted values. Output labels not used."
+                return predictions.tolist()
+
+            retVal = []
+            for pred in predictions:
+                plist = pred.tolist()
+                cRow = {}
+                for idx, cVal in enumerate(plist):
+                    cRow[self.outputlabels[str(idx)]] = cVal
+
+                retVal.append(cRow)
+
+            return retVal
         except:
-            return None
+           return None
 
     def predict_string(self, input):
         return str(self.predict(input))
